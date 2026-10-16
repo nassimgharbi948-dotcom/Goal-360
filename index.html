@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Goal 360 | مباريات اليوم</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#14202b;--mute:#667785;--line:#e2e8ee;--brand:#0a7d4b;--live:#e5322d;--chip:#e9f4ee;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1419;--card:#171f27;--text:#e8eef3;--mute:#8fa1af;--line:#26313b;--chip:#16281f;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,"Noto Sans Arabic",Arial,sans-serif}
+header{background:var(--brand);color:#fff;position:sticky;top:0;z-index:5}
+.bar{max-width:860px;margin:auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-weight:800;font-size:20px}.nav{display:flex;gap:14px;font-size:14px}.nav a{color:#ffffffcc;text-decoration:none}.nav a.cur{color:#fff;font-weight:700}
+main{max-width:860px;margin:auto;padding:16px}button{font:inherit;cursor:pointer}
+.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-weight:700}
+.tabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px}
+.filters button{white-space:nowrap;padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--mute)}
+.filters button.on{background:var(--chip);color:var(--brand);border-color:var(--brand);font-weight:700}
+.league{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;overflow:hidden}
+.league h2{margin:0;padding:10px 14px;font-size:15px;background:var(--chip);color:var(--brand);display:flex;align-items:center;gap:8px}
+.league h2 img{width:20px;height:20px;object-fit:contain}
+.m{display:grid;grid-template-columns:1fr 90px 1fr;align-items:center;gap:8px;padding:12px 14px;border-top:1px solid var(--line);cursor:pointer}
+.m:hover{background:var(--chip)}.m:first-of-type{border-top:0}
+.t{font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}.t.b{flex-direction:row-reverse;justify-content:flex-end}
+.t img{width:24px;height:24px;object-fit:contain}.c{text-align:center}
+.score{font-size:19px;font-weight:800;direction:ltr}.st{font-size:12px;color:var(--mute)}.st.live{color:var(--live);font-weight:700}
+.empty,.err{text-align:center;color:var(--mute);padding:40px 0}.err{color:var(--live)}
+.about{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:8px;line-height:1.9;font-size:14px}.about h3{margin:0 0 8px;color:var(--brand)}
+.ov{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:16px;z-index:20}.ov.on{display:flex}
+.box{background:var(--card);border-radius:14px;max-width:640px;width:100%;max-height:100%;overflow:auto;padding:16px}.box h3{margin:0 0 4px}.sub{color:var(--mute);font-size:13px;margin-bottom:12px}
+.vid{aspect-ratio:16/9;width:100%;border:0;border-radius:10px;background:#000}.note{background:var(--chip);border-radius:10px;padding:14px;font-size:14px;line-height:1.8}
+.btn{display:inline-block;margin-top:12px;padding:10px 16px;border-radius:10px;background:var(--brand);color:#fff;text-decoration:none;font-weight:700;border:0}.btn.g{background:var(--line);color:var(--text);margin-inline-start:8px}
+footer{max-width:860px;margin:auto;padding:8px 16px 28px;color:var(--mute);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<header><div class="bar"><span class="logo">⚽ Goal 360</span><nav class="nav"><a href="/">الرئيسية</a><a href="/" class="cur">مباريات اليوم</a></nav></div></header>
+<main>
+<div class="tabs" id="tabs"><button data-d="-1">مباريات الأمس</button><button data-d="0" class="on">مباريات اليوم</button><button data-d="1">مباريات الغد</button></div>
+<div class="filters" id="filters"></div>
+<div id="list"><div class="empty">جاري التحميل…</div></div>
+<section class="about"><h3>تابع مباريات اليوم مع Goal 360</h3><p>جدول يومي لأهم مباريات كرة القدم في كل البطولات، بنتائج وحالات محدّثة وأوقات بحسب توقيت جهازك.</p></section>
+</main>
+<div class="ov" id="ov"><div class="box" id="box"></div></div>
+<footer>© Goal 360 · جميع الحقوق محفوظة</footer>
+<script>
+const $=s=>document.querySelector(s);
+const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let day=0,lg="all",matches=[],streams={default:{},channels:{},youtube:{}};
+fetch("/streams.json").then(r=>r.json()).then(j=>streams=j).catch(()=>{});
+
+async function load(){
+  try{
+    const r=await fetch(`/api/matches?day=${day}&tz=${encodeURIComponent(tz)}`);
+    const j=await r.json();
+    if(!r.ok)throw new Error(j.error||"خطأ");
+    matches=j.matches;buildFilters();render();
+  }catch(e){$("#list").innerHTML=`<div class="err">تعذّر تحميل المباريات: ${esc(e.message)}</div>`}
+}
+function buildFilters(){
+  const ls=[...new Map(matches.map(m=>[m.league.id,m.league])).values()].sort((a,b)=>a.name.localeCompare(b.name));
+  if(lg!=="all"&&!ls.some(l=>String(l.id)===lg))lg="all";
+  $("#filters").innerHTML=`<button data-k="all" class="${lg==="all"?"on":""}">الكل</button>`+ls.map(l=>`<button data-k="${l.id}" class="${String(l.id)===lg?"on":""}">${esc(l.name)}</button>`).join("");
+}
+function render(){
+  const rows=matches.filter(m=>lg==="all"||String(m.league.id)===lg);
+  const by=new Map();rows.forEach(m=>{if(!by.has(m.league.id))by.set(m.league.id,[]);by.get(m.league.id).push(m)});
+  if(!by.size){$("#list").innerHTML='<div class="empty">لا توجد مباريات</div>';return}
+  $("#list").innerHTML=[...by.values()].map(g=>{
+    const l=g[0].league;
+    return `<section class="league"><h2><img src="${esc(l.logo)}" alt="" loading="lazy">${esc(l.name)} · ${esc(l.country)}</h2>`+
+    g.sort((a,b)=>new Date(a.time)-new Date(b.time)).map(m=>{
+      const tm=new Date(m.time).toLocaleTimeString("ar",{hour:"2-digit",minute:"2-digit"});
+      const mid=m.status==="soon"?`<div class="score">${tm}</div><div class="st">لم تبدأ</div>`
+        :m.status==="off"?`<div class="st">مؤجلة/ملغاة</div>`
+        :`<div class="score">${m.score[0]??0} - ${m.score[1]??0}</div><div class="st ${m.status==="live"?"live":""}">${m.status==="live"?"● مباشر "+(m.minute?m.minute+"'":""):"انتهت"}</div>`;
+      return `<div class="m" data-id="${m.id}"><div class="t"><img src="${esc(m.home.logo)}" alt="" loading="lazy">${esc(m.home.name)}</div><div class="c">${mid}</div><div class="t b"><img src="${esc(m.away.logo)}" alt="" loading="lazy">${esc(m.away.name)}</div></div>`}).join("")+`</section>`}).join("");
+}
+$("#tabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;day=+b.dataset.d;[...$("#tabs").children].forEach(x=>x.classList.toggle("on",x===b));load()};
+$("#filters").onclick=e=>{const b=e.target.closest("button");if(!b)return;lg=b.dataset.k;buildFilters();render()};
+$("#list").onclick=e=>{
+  const el=e.target.closest(".m");if(!el)return;
+  const m=matches.find(x=>String(x.id)===el.dataset.id);
+  const ch=streams.channels[m.league.id]||streams.default,yt=streams.youtube[m.id];
+  $("#box").innerHTML=`<h3>${esc(m.home.name)} × ${esc(m.away.name)}</h3><div class="sub">${esc(m.league.name)}</div>`+
+    (yt?`<iframe class="vid" src="https://www.youtube.com/embed/${encodeURIComponent(yt)}" allow="fullscreen" allowfullscreen></iframe>`:`<div class="note">لا يوجد بث رسمي مضمّن لهذه المباراة. شاهدها عبر القناة الناقلة الرسمية.</div>`)+
+    `<a class="btn" href="${esc(ch.url)}" target="_blank" rel="noopener">شاهد على ${esc(ch.name)}</a><button class="btn g" id="x">إغلاق</button>`;
+  $("#ov").classList.add("on");$("#x").onclick=()=>$("#ov").classList.remove("on");
+};
+$("#ov").onclick=e=>{if(e.target.id==="ov")e.target.classList.remove("on")};
+load();setInterval(()=>{if(!document.hidden)load()},60000);
+</script>
+</body>
+</html>
