@@ -94,3 +94,11 @@ load();setInterval(()=>{if(!document.hidden)load()},60000);
 </script>
 </body>
 </html>
+<script>
+const TOP=[39,140,135,78,61,2];
+const AR=["Saudi-Arabia","Egypt","Morocco","Tunisia","Algeria","United-Arab-Emirates","Qatar","Jordan","Iraq","Kuwait","Bahrain","Oman","Lebanon","Libya","Sudan","Syria","Palestine","Yemen"];
+const pr=l=>{const i=TOP.indexOf(l.id);if(i>=0)return i;const a=AR.indexOf((l.country||"").replace(/ /g,"-"));return a>=0?10+a:99};
+const _render=render,_bf=buildFilters;
+render=function(){matches.sort((a,b)=>pr(a.league)-pr(b.league));_render()};
+buildFilters=function(){_bf();const f=$("#filters"),m=new Map(matches.map(x=>[String(x.league.id),x.league]));[...f.children].slice(1).sort((a,b)=>pr(m.get(a.dataset.k))-pr(m.get(b.dataset.k))).forEach(b=>f.append(b))};
+             </script>
