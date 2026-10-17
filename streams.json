@@ -1,4 +1,4 @@
-{{
+{
   "default": { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
   "channels": {
     "39":   { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
