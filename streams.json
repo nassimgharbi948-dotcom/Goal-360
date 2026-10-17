@@ -1,11 +1,17 @@
-{
-  "_ملاحظة": "عدّل القنوات الناقلة بحسب بلد جمهورك. المفتاح = رقم البطولة في API-Football. youtube: رقم المباراة -> معرّف فيديو رسمي يسمح بالتضمين.",
-  "default": { "name": "القناة الناقلة", "url": "https://www.google.com/search?q=القناة+الناقلة+للمباراة" },
+{{
+  "default": { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
   "channels": {
-    "307": { "name": "Shahid", "url": "https://shahid.mbc.net" },
-    "253": { "name": "Apple TV", "url": "https://tv.apple.com" },
-    "3":   { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
-    "2":   { "name": "beIN SPORTS", "url": "https://www.beinsports.com" }
+    "39":   { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
+    "140":  { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
+    "135":  { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
+    "78":   { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
+    "61":   { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
+    "2":    { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
+    "2017": { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
+    "2003": { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
+    "2013": { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
+    "2016": { "name": "beIN SPORTS", "url": "https://www.beinsports.com" },
+    "307":  { "name": "Shahid", "url": "https://shahid.mbc.net" }
   },
   "youtube": {}
 }
